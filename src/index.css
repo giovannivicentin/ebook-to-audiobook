@@ -1,0 +1,57 @@
+:root {
+  --text: #3d3a45;
+  --text-h: #141218;
+  --muted: #6b6578;
+  --bg: #f7f5f2;
+  --surface: #fffefb;
+  --surface-2: #efece6;
+  --border: #d9d4cc;
+  --border-strong: #c4beb4;
+  --accent: #2d6a4f;
+  --accent-soft: rgba(45, 106, 79, 0.08);
+  --err-bg: #fde8e8;
+  --err-fg: #7f1d1d;
+  --err-border: #f5a8a8;
+
+  font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #c4c0ca;
+    --text-h: #f2f0f5;
+    --muted: #8a8496;
+    --bg: #121014;
+    --surface: #1a181e;
+    --surface-2: #232128;
+    --border: #35323d;
+    --border-strong: #4a4654;
+    --accent: #52b788;
+    --accent-soft: rgba(82, 183, 136, 0.12);
+    --err-bg: #3f1e24;
+    --err-fg: #fecaca;
+    --err-border: #7f2d38;
+  }
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100svh;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
