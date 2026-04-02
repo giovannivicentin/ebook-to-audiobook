@@ -1,26 +1,10 @@
+/* Paleta: Matcha Latte, Botanist, Aquamarine, Grape Soda, Pink Diamond */
 :root {
-  --text: #2b2833;
-  --text-h: #12101a;
-  --muted: #5c5668;
-  --bg: #f4f1eb;
-  --bg-elevated: #faf8f4;
-  --surface: #fffcf7;
-  --surface-2: #ebe6dc;
-  --border: #d4cec3;
-  --border-strong: #b8b0a2;
-  --accent: #1b5e45;
-  --accent-hover: #164a37;
-  --accent-soft: rgba(27, 94, 69, 0.09);
-  --accent-muted: rgba(27, 94, 69, 0.55);
-  --shadow-sm: 0 1px 2px rgba(18, 16, 26, 0.05);
-  --shadow-md: 0 4px 14px rgba(18, 16, 26, 0.07), 0 2px 4px rgba(18, 16, 26, 0.04);
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
-  --err-bg: #fde8e8;
-  --err-fg: #7f1d1d;
-  --err-border: #f0b4b4;
+  --palette-matcha-latte: #d1efbd;
+  --palette-botanist: #89d385;
+  --palette-aquamarine: #6cd1f0;
+  --palette-grape-soda: #a1a1f7;
+  --palette-pink-diamond: #efccea;
 
   font-family:
     'DM Sans',
@@ -36,28 +20,73 @@
   -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #c9c4d1;
-    --text-h: #f4f2f8;
-    --muted: #928da0;
-    --bg: #0f0e12;
-    --bg-elevated: #141318;
-    --surface: #1a1820;
-    --surface-2: #24222c;
-    --border: #3a3645;
-    --border-strong: #524e5e;
-    --accent: #5ecf9a;
-    --accent-hover: #7ad9ab;
-    --accent-soft: rgba(94, 207, 154, 0.14);
-    --accent-muted: rgba(94, 207, 154, 0.65);
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.25);
-    --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
-    --err-bg: #3a1f24;
-    --err-fg: #fecaca;
-    --err-border: #8b3d4a;
-  }
+:root[data-theme='light'] {
+  --text: #1c2e19;
+  --text-h: #0f1a0d;
+  --muted: #2f4a2b;
+  --text-subtle: #3d5c38;
+  --bg: var(--palette-matcha-latte);
+  --bg-elevated: #fbfef8;
+  --surface: #ffffff;
+  --surface-2: var(--palette-pink-diamond);
+  --border: #4a8a42;
+  --border-strong: #2d6a26;
+  --accent: #4a4ab8;
+  --accent-hover: #3a3a9e;
+  /* Preenchimentos sólidos (sem “faded” rgba na UI) */
+  --fill-wash: #e8f2e4;
+  --fill-accent-tint: #e8e8f7;
+  --fill-accent-hover: #dadaf0;
+  --accent-muted: #3a3a8a;
+  --player-play: #347a2f;
+  --player-play-hover: #286224;
+  --player-pill: #dcebd4;
+  --joy-sun: #0a7ea3;
+  --shadow-hairline: 0 1px 0 rgba(15, 26, 13, 0.12);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --ring-focus: #0a7ea3;
+  --disabled-fg: #5a6d57;
+  --disabled-bg: #dfe8dc;
+  --disabled-border: #7a9a74;
+  --err-bg: #fde8ef;
+  --err-fg: #6b1028;
+  --err-border: #c75b7a;
+}
+
+:root[data-theme='dark'] {
+  --text: #e8f0e6;
+  --text-h: #f6faf5;
+  --muted: #b0c2ad;
+  --text-subtle: #c5d4c2;
+  --bg: #1e2522;
+  --bg-elevated: #28302c;
+  --surface: #2f3834;
+  --surface-2: #3a3448;
+  --border: #5a7268;
+  --border-strong: #7d948a;
+  --accent: #b8b8ff;
+  --accent-hover: #d2d2ff;
+  --fill-wash: #343d39;
+  --fill-accent-tint: #3d3a52;
+  --fill-accent-hover: #4a4660;
+  --accent-muted: #d0d0ff;
+  --player-play: #4a9044;
+  --player-play-hover: #5cad54;
+  --player-pill: #2f3430;
+  --joy-sun: #6cd1f0;
+  --shadow-hairline: 0 1px 0 rgba(255, 255, 255, 0.1);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --ring-focus: #7dd3fc;
+  --disabled-fg: #7a8f76;
+  --disabled-bg: #252e2a;
+  --disabled-border: #4a5c54;
+  --err-bg: #3d2832;
+  --err-fg: #efccea;
+  --err-border: #a8486a;
 }
 
 #root {
@@ -76,13 +105,27 @@ body {
   box-sizing: border-box;
 }
 
-:focus {
+:focus:not(:focus-visible) {
   outline: none;
 }
 
 :focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
+  outline: 3px solid var(--ring-focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-contrast: more) {
+  :root[data-theme='light'] {
+    --border: #1a5a14;
+    --text: #0a0f09;
+    --ring-focus: #005f7a;
+  }
+
+  :root[data-theme='dark'] {
+    --border: #c5d4c2;
+    --text: #ffffff;
+    --ring-focus: #ffffff;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
