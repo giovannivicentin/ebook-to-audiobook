@@ -411,11 +411,10 @@ export default function App() {
                     ))
                   )}
                 </select>
-                {lang === "pt-BR" && (
+                {lang === "pt-BR" && hasMicrosoftFranciscaOrAntonio && (
                   <p className="hint">
-                    {hasMicrosoftFranciscaOrAntonio
-                      ? "Microsoft Francisca/Antonio detectada: estas vozes ficam priorizadas no topo."
-                      : "Se você instalar Microsoft Francisca ou Antonio no sistema, elas aparecerão aqui e ficarão no topo automaticamente."}
+                    Microsoft Francisca/Antonio detectada: estas vozes ficam
+                    priorizadas no topo.
                   </p>
                 )}
               </div>
