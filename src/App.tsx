@@ -271,9 +271,7 @@ export default function App() {
             onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
             aria-pressed={theme === "dark"}
             aria-label={
-              theme === "dark"
-                ? "Ativar tema claro"
-                : "Ativar tema escuro"
+              theme === "dark" ? "Ativar tema claro" : "Ativar tema escuro"
             }
           >
             {theme === "dark" ? (
@@ -291,7 +289,12 @@ export default function App() {
                 <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
               </svg>
             ) : (
-              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
                 <path
                   fill="currentColor"
                   d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
@@ -306,401 +309,448 @@ export default function App() {
         </p>
       </header>
 
-      <section
-        className={`dropzone${isDraggingFile ? " dropzone--dragging" : ""}`}
-        aria-busy={loadState === "loading"}
-        onDragEnter={onDragEnter}
-        onDragOver={(e) => e.preventDefault()}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-      >
-        <input
-          type="file"
-          accept=".pdf,.epub,application/pdf,application/epub+zip"
-          onChange={onFileInput}
-          className="file-input"
-          id="file"
-          aria-describedby="drop-hint"
-        />
-        <label htmlFor="file" className="drop-label">
-          <span className="drop-icon" aria-hidden="true">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="17 8 12 3 7 8" />
-              <line x1="12" y1="3" x2="12" y2="15" />
-            </svg>
-          </span>
-          <span className="drop-title">
-            Arraste um arquivo ou clique para escolher
-          </span>
-          <span id="drop-hint" className="drop-hint">
-            Formatos aceitos: PDF ou EPUB
-          </span>
-        </label>
-      </section>
-
-      {fileName && (
-        <p
-          className="file-meta"
-          {...(loadState === "loading"
-            ? { "aria-live": "polite" as const }
-            : {})}
+      <main id="conteudo-principal" tabIndex={-1}>
+        <section
+          className={`dropzone${isDraggingFile ? " dropzone--dragging" : ""}`}
+          aria-busy={loadState === "loading"}
+          onDragEnter={onDragEnter}
+          onDragOver={(e) => e.preventDefault()}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
         >
-          <span>
-            Arquivo: <strong>{fileName}</strong>
-          </span>
-          {loadState === "loading" && (
-            <span className="loading-badge">Extraindo texto…</span>
-          )}
-        </p>
-      )}
-
-      {error && (
-        <div className="banner error" role="alert">
-          {error}
-        </div>
-      )}
-
-      {loadState === "ready" && text && (
-        <main id="conteudo-principal">
-          <section className="controls" aria-labelledby="painel-leitura">
-            <h2 id="painel-leitura" className="control-section-title">
-              Leitura e voz
-            </h2>
-            <div className="controls-grid two">
-              <div className="field-group">
-                <label htmlFor="lang">Idioma da leitura</label>
-                <select
-                  id="lang"
-                  value={lang}
-                  onChange={(e) => setLang(e.target.value as LangMode)}
-                >
-                  {LANG_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="field-group">
-                <label htmlFor="voice">Voz (mais naturais no topo)</label>
-                <select
-                  id="voice"
-                  value={voiceIndex}
-                  onChange={(e) => setVoiceIndex(Number(e.target.value))}
-                  disabled={voices.length === 0}
-                >
-                  {voices.length === 0 ? (
-                    <option value={0}>
-                      Nenhuma voz encontrada para este idioma
-                    </option>
-                  ) : (
-                    voices.map((v, i) => (
-                      <option key={`${v.name}-${v.lang}-${i}`} value={i}>
-                        {v.name} ({v.lang})
-                      </option>
-                    ))
-                  )}
-                </select>
-                {lang === "pt-BR" && hasMicrosoftFranciscaOrAntonio && (
-                  <p className="hint">
-                    Microsoft Francisca/Antonio detectada: estas vozes ficam
-                    priorizadas no topo.
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="controls-grid">
-              <div className="field-group">
-                <label htmlFor="rate">
-                  Velocidade{" "}
-                  <span className="range-value">({rate.toFixed(2)}×)</span>
-                </label>
-                <div className="range-track">
-                  <input
-                    id="rate"
-                    type="range"
-                    min={0.65}
-                    max={1.35}
-                    step={0.05}
-                    value={rate}
-                    onChange={(e) => setRate(Number(e.target.value))}
-                    aria-valuetext={`${rate.toFixed(2)} vezes`}
-                  />
-                </div>
-                <p className="hint">
-                  Valores um pouco abaixo de 1× costumam soar mais claros em
-                  pt-BR.
-                </p>
-              </div>
-
-              <div className="field-group">
-                <label htmlFor="pitch">
-                  Tom (pitch){" "}
-                  <span className="range-value">({pitch.toFixed(2)})</span>
-                </label>
-                <div className="range-track">
-                  <input
-                    id="pitch"
-                    type="range"
-                    min={0.85}
-                    max={1.12}
-                    step={0.01}
-                    value={pitch}
-                    onChange={(e) => setPitch(Number(e.target.value))}
-                    aria-valuetext={pitch.toFixed(2)}
-                  />
-                </div>
-                <p className="hint">
-                  Ajuste fino do tom; 1,0 é o padrão da voz.
-                </p>
-              </div>
-            </div>
-
-            <div className="playback-block">
-              <p
-                className="control-section-title control-section-title--sub"
-                id="reproducao"
-              >
-                Reprodução
-              </p>
-
-              {showTransport && (
-                <div className="player-shell" aria-labelledby="reproducao">
-                  <div className="player-time">
-                    <span className="player-time__live" aria-live="polite">
-                      {formatTimeMmSs(elapsedSec)}
-                    </span>
-                    <span className="player-time__sep" aria-hidden="true">
-                      /
-                    </span>
-                    <span className="player-time__total" title="Duração estimada">
-                      ~{formatTimeMmSs(totalApprox)}
-                    </span>
-                  </div>
-                  <p className="player-chunk">
-                    Trecho{" "}
-                    <strong>
-                      {totalChunks ? chunkIndex + 1 : 0} / {totalChunks}
-                    </strong>
-                  </p>
-
-                  <div className="player-controls">
-                    {playback === "idle" && (
-                      <button
-                        type="button"
-                        className="player-btn player-btn--play"
-                        onClick={handlePlay}
-                        aria-label="Ouvir"
-                        title="Ouvir"
-                      >
-                        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-                          <path fill="currentColor" d="M8 5v14l11-7L8 5z" />
-                        </svg>
-                      </button>
-                    )}
-                    {playback === "playing" && (
-                      <button
-                        type="button"
-                        className="player-btn player-btn--primary"
-                        onClick={handlePause}
-                        aria-label="Pausar"
-                        title="Pausar"
-                      >
-                        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-                          <path fill="currentColor" d="M6 5h4v14H6V5zm8 0h4v14h-4V5z" />
-                        </svg>
-                      </button>
-                    )}
-                    {playback === "paused" && (
-                      <button
-                        type="button"
-                        className="player-btn player-btn--play"
-                        onClick={handleResume}
-                        aria-label="Continuar"
-                        title="Continuar"
-                      >
-                        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-                          <path fill="currentColor" d="M8 5v14l11-7L8 5z" />
-                        </svg>
-                      </button>
-                    )}
-                    {playback !== "idle" && (
-                      <button
-                        type="button"
-                        className="player-btn player-btn--ghost"
-                        onClick={handleStop}
-                        aria-label="Parar e voltar ao início"
-                        title="Parar"
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-                          <path fill="currentColor" d="M6 6h12v12H6V6z" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="player-seek">
-                    <button
-                      type="button"
-                      className="player-skip"
-                      title="Voltar 5 trechos"
-                      aria-label="Voltar 5 trechos"
-                      onClick={() => handleSkip(-5)}
-                      disabled={totalChunks <= 1}
-                    >
-                      −5
-                    </button>
-                    <button
-                      type="button"
-                      className="player-skip"
-                      title="Trecho anterior"
-                      aria-label="Trecho anterior"
-                      onClick={() => handleSkip(-1)}
-                      disabled={totalChunks <= 1}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                        <path fill="currentColor" d="M6 6h2v12H6V6zm3.5 6l9 6V6l-9 6z" />
-                      </svg>
-                    </button>
-                    <div className="seek-slider-wrap">
-                      <input
-                        type="range"
-                        className="seek-slider"
-                        min={0}
-                        max={Math.max(0, totalChunks - 1)}
-                        step={1}
-                        value={clamp(
-                          chunkIndex,
-                          0,
-                          Math.max(0, totalChunks - 1),
-                        )}
-                        onChange={(e) =>
-                          handleSeekSlider(Number(e.target.value))
-                        }
-                        aria-label="Posição na leitura (por trecho)"
-                        aria-valuemin={0}
-                        aria-valuemax={Math.max(0, totalChunks - 1)}
-                        aria-valuenow={clamp(
-                          chunkIndex,
-                          0,
-                          Math.max(0, totalChunks - 1),
-                        )}
-                        aria-valuetext={`Trecho ${totalChunks ? chunkIndex + 1 : 0} de ${totalChunks}`}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className="player-skip"
-                      title="Próximo trecho"
-                      aria-label="Próximo trecho"
-                      onClick={() => handleSkip(1)}
-                      disabled={totalChunks <= 1}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-                        <path fill="currentColor" d="M16 18h2V6h-2v12zM6 6v12l9-6-9-6z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      className="player-skip"
-                      title="Avançar 5 trechos"
-                      aria-label="Avançar 5 trechos"
-                      onClick={() => handleSkip(5)}
-                      disabled={totalChunks <= 1}
-                    >
-                      +5
-                    </button>
-                  </div>
-
-                  <p className="transport-note">
-                    O tempo à <strong>esquerda</strong> acompanha a leitura em tempo real (cada
-                    trecho começa a contar quando a fala começa). O valor com <strong>~</strong> é
-                    duração <strong>estimada</strong> do texto todo — a Web Speech API não expõe
-                    tempo exato como um MP3.
-                  </p>
-
-                  {playback !== "idle" && (
-                    <div className="progress-stack" aria-live="polite">
-                      <div
-                        className="progress-wrap"
-                        role="progressbar"
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-valuenow={progressPct}
-                        aria-valuetext={`${progressPct} por cento do texto lido (estimativa)`}
-                        aria-labelledby="progress-percent-label"
-                      >
-                        <div
-                          className="progress-bar"
-                          style={{ width: `${progressPct}%` }}
-                        />
-                      </div>
-                      <span className="progress-label" id="progress-percent-label">
-                        {progressPct}% do texto (estimativa)
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="preview" aria-labelledby="preview-heading">
-            <div className="preview-header">
-              <h2 id="preview-heading">Prévia do texto</h2>
-              {textTruncated && (
-                <span className="preview-badge">Primeiros caracteres</span>
-              )}
-            </div>
-            <pre className="preview-text">{preview}</pre>
-          </section>
-        </main>
-      )}
-
-      <section className="help" aria-label="Ajuda sobre voz e acessibilidade">
-        <details className="help-details" id="painel-ajuda">
-          <summary className="help-summary" id="titulo-ajuda">
-            <span className="help-summary__text">
-              <HelpSummaryLabel platform={platform} />
-            </span>
-            <span className="help-summary__chevron" aria-hidden="true">
+          <input
+            type="file"
+            accept=".pdf,.epub,application/pdf,application/epub+zip"
+            onChange={onFileInput}
+            className="file-input"
+            id="file"
+            aria-describedby="drop-hint"
+          />
+          <label htmlFor="file" className="drop-label">
+            <span className="drop-icon" aria-hidden="true">
               <svg
-                width="20"
-                height="20"
+                xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-hidden="true"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <path
-                  d="M6 9l6 6 6-6"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
             </span>
-          </summary>
-          <div className="help-anim">
-            <div className="help-anim-inner">
-              <div className="help-body">
-                <HelpBody platform={platform} />
+            <span className="drop-title">
+              Arraste um arquivo ou clique para escolher
+            </span>
+            <span id="drop-hint" className="drop-hint">
+              Formatos aceitos: PDF ou EPUB
+            </span>
+          </label>
+        </section>
+
+        {fileName && (
+          <p
+            className="file-meta"
+            {...(loadState === "loading"
+              ? { "aria-live": "polite" as const }
+              : {})}
+          >
+            <span>
+              Arquivo: <strong>{fileName}</strong>
+            </span>
+            {loadState === "loading" && (
+              <span className="loading-badge">Extraindo texto…</span>
+            )}
+          </p>
+        )}
+
+        {error && (
+          <div className="banner error" role="alert">
+            {error}
+          </div>
+        )}
+
+        {loadState === "ready" && text && (
+          <>
+            <section className="controls" aria-labelledby="painel-leitura">
+              <h2 id="painel-leitura" className="control-section-title">
+                Leitura e voz
+              </h2>
+              <div className="controls-grid two">
+                <div className="field-group">
+                  <label htmlFor="lang">Idioma da leitura</label>
+                  <select
+                    id="lang"
+                    value={lang}
+                    onChange={(e) => setLang(e.target.value as LangMode)}
+                  >
+                    {LANG_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>
+                        {o.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="field-group">
+                  <label htmlFor="voice">Voz (mais naturais no topo)</label>
+                  <select
+                    id="voice"
+                    value={voiceIndex}
+                    onChange={(e) => setVoiceIndex(Number(e.target.value))}
+                    disabled={voices.length === 0}
+                  >
+                    {voices.length === 0 ? (
+                      <option value={0}>
+                        Nenhuma voz encontrada para este idioma
+                      </option>
+                    ) : (
+                      voices.map((v, i) => (
+                        <option key={`${v.name}-${v.lang}-${i}`} value={i}>
+                          {v.name} ({v.lang})
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  {lang === "pt-BR" && hasMicrosoftFranciscaOrAntonio && (
+                    <p className="hint">
+                      Microsoft Francisca/Antonio detectada: estas vozes ficam
+                      priorizadas no topo.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="controls-grid">
+                <div className="field-group">
+                  <label htmlFor="rate">
+                    Velocidade{" "}
+                    <span className="range-value">({rate.toFixed(2)}×)</span>
+                  </label>
+                  <div className="range-track">
+                    <input
+                      id="rate"
+                      type="range"
+                      min={0.65}
+                      max={1.35}
+                      step={0.05}
+                      value={rate}
+                      onChange={(e) => setRate(Number(e.target.value))}
+                      aria-valuetext={`${rate.toFixed(2)} vezes`}
+                    />
+                  </div>
+                  <p className="hint">
+                    Valores um pouco abaixo de 1× costumam soar mais claros em
+                    pt-BR.
+                  </p>
+                </div>
+
+                <div className="field-group">
+                  <label htmlFor="pitch">
+                    Tom (pitch){" "}
+                    <span className="range-value">({pitch.toFixed(2)})</span>
+                  </label>
+                  <div className="range-track">
+                    <input
+                      id="pitch"
+                      type="range"
+                      min={0.85}
+                      max={1.12}
+                      step={0.01}
+                      value={pitch}
+                      onChange={(e) => setPitch(Number(e.target.value))}
+                      aria-valuetext={pitch.toFixed(2)}
+                    />
+                  </div>
+                  <p className="hint">
+                    Ajuste fino do tom; 1,0 é o padrão da voz.
+                  </p>
+                </div>
+              </div>
+
+              <div className="playback-block">
+                <p
+                  className="control-section-title control-section-title--sub"
+                  id="reproducao"
+                >
+                  Reprodução
+                </p>
+
+                {showTransport && (
+                  <div className="player-shell" aria-labelledby="reproducao">
+                    <div className="player-time">
+                      <span className="player-time__live" aria-live="polite">
+                        {formatTimeMmSs(elapsedSec)}
+                      </span>
+                      <span className="player-time__sep" aria-hidden="true">
+                        /
+                      </span>
+                      <span
+                        className="player-time__total"
+                        title="Duração estimada"
+                      >
+                        ~{formatTimeMmSs(totalApprox)}
+                      </span>
+                    </div>
+                    <p className="player-chunk">
+                      Trecho{" "}
+                      <strong>
+                        {totalChunks ? chunkIndex + 1 : 0} / {totalChunks}
+                      </strong>
+                    </p>
+
+                    <div className="player-controls">
+                      {playback === "idle" && (
+                        <button
+                          type="button"
+                          className="player-btn player-btn--play"
+                          onClick={handlePlay}
+                          aria-label="Ouvir"
+                          title="Ouvir"
+                        >
+                          <svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path fill="currentColor" d="M8 5v14l11-7L8 5z" />
+                          </svg>
+                        </button>
+                      )}
+                      {playback === "playing" && (
+                        <button
+                          type="button"
+                          className="player-btn player-btn--primary"
+                          onClick={handlePause}
+                          aria-label="Pausar"
+                          title="Pausar"
+                        >
+                          <svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path
+                              fill="currentColor"
+                              d="M6 5h4v14H6V5zm8 0h4v14h-4V5z"
+                            />
+                          </svg>
+                        </button>
+                      )}
+                      {playback === "paused" && (
+                        <button
+                          type="button"
+                          className="player-btn player-btn--play"
+                          onClick={handleResume}
+                          aria-label="Continuar"
+                          title="Continuar"
+                        >
+                          <svg
+                            width="22"
+                            height="22"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path fill="currentColor" d="M8 5v14l11-7L8 5z" />
+                          </svg>
+                        </button>
+                      )}
+                      {playback !== "idle" && (
+                        <button
+                          type="button"
+                          className="player-btn player-btn--ghost"
+                          onClick={handleStop}
+                          aria-label="Parar e voltar ao início"
+                          title="Parar"
+                        >
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path fill="currentColor" d="M6 6h12v12H6V6z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="player-seek">
+                      <button
+                        type="button"
+                        className="player-skip"
+                        title="Voltar 5 trechos"
+                        aria-label="Voltar 5 trechos"
+                        onClick={() => handleSkip(-5)}
+                        disabled={totalChunks <= 1}
+                      >
+                        −5
+                      </button>
+                      <button
+                        type="button"
+                        className="player-skip"
+                        title="Trecho anterior"
+                        aria-label="Trecho anterior"
+                        onClick={() => handleSkip(-1)}
+                        disabled={totalChunks <= 1}
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill="currentColor"
+                            d="M6 6h2v12H6V6zm3.5 6l9 6V6l-9 6z"
+                          />
+                        </svg>
+                      </button>
+                      <div className="seek-slider-wrap">
+                        <input
+                          type="range"
+                          className="seek-slider"
+                          min={0}
+                          max={Math.max(0, totalChunks - 1)}
+                          step={1}
+                          value={clamp(
+                            chunkIndex,
+                            0,
+                            Math.max(0, totalChunks - 1),
+                          )}
+                          onChange={(e) =>
+                            handleSeekSlider(Number(e.target.value))
+                          }
+                          aria-label="Posição na leitura (por trecho)"
+                          aria-valuemin={0}
+                          aria-valuemax={Math.max(0, totalChunks - 1)}
+                          aria-valuenow={clamp(
+                            chunkIndex,
+                            0,
+                            Math.max(0, totalChunks - 1),
+                          )}
+                          aria-valuetext={`Trecho ${totalChunks ? chunkIndex + 1 : 0} de ${totalChunks}`}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="player-skip"
+                        title="Próximo trecho"
+                        aria-label="Próximo trecho"
+                        onClick={() => handleSkip(1)}
+                        disabled={totalChunks <= 1}
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fill="currentColor"
+                            d="M16 18h2V6h-2v12zM6 6v12l9-6-9-6z"
+                          />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="player-skip"
+                        title="Avançar 5 trechos"
+                        aria-label="Avançar 5 trechos"
+                        onClick={() => handleSkip(5)}
+                        disabled={totalChunks <= 1}
+                      >
+                        +5
+                      </button>
+                    </div>
+
+                    <p className="transport-note">
+                      O tempo à <strong>esquerda</strong> acompanha a leitura em
+                      tempo real (cada trecho começa a contar quando a fala
+                      começa). O valor com <strong>~</strong> é duração{" "}
+                      <strong>estimada</strong> do texto todo — a Web Speech API
+                      não expõe tempo exato como um MP3.
+                    </p>
+
+                    {playback !== "idle" && (
+                      <div className="progress-stack" aria-live="polite">
+                        <div
+                          className="progress-wrap"
+                          role="progressbar"
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={progressPct}
+                          aria-valuetext={`${progressPct} por cento do texto lido (estimativa)`}
+                          aria-labelledby="progress-percent-label"
+                        >
+                          <div
+                            className="progress-bar"
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+                        <span
+                          className="progress-label"
+                          id="progress-percent-label"
+                        >
+                          {progressPct}% do texto (estimativa)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="preview" aria-labelledby="preview-heading">
+              <div className="preview-header">
+                <h2 id="preview-heading">Prévia do texto</h2>
+                {textTruncated && (
+                  <span className="preview-badge">Primeiros caracteres</span>
+                )}
+              </div>
+              <pre className="preview-text">{preview}</pre>
+            </section>
+          </>
+        )}
+        <section className="help" aria-label="Ajuda sobre voz e acessibilidade">
+          <details className="help-details" id="painel-ajuda">
+            <summary className="help-summary" id="titulo-ajuda">
+              <span className="help-summary__text">
+                <HelpSummaryLabel platform={platform} />
+              </span>
+              <span className="help-summary__chevron" aria-hidden="true">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 9l6 6 6-6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+            </summary>
+            <div className="help-anim">
+              <div className="help-anim-inner">
+                <div className="help-body">
+                  <HelpBody platform={platform} />
+                </div>
               </div>
             </div>
-          </div>
-        </details>
-      </section>
+          </details>
+        </section>
+      </main>
 
       <div className="footer-block">
         <p className="footer-hint">{footerHint}</p>
