@@ -5,31 +5,60 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('ebook-audio-theme')
-          if (t === 'light' || t === 'dark') {
-            document.documentElement.setAttribute('data-theme', t)
-            return
+          var t = localStorage.getItem("ebook-audio-theme");
+          if (t === "light" || t === "dark") {
+            document.documentElement.setAttribute("data-theme", t);
+            return;
           }
         } catch (e) {}
         document.documentElement.setAttribute(
-          'data-theme',
-          window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
-        )
-      })()
+          "data-theme",
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light",
+        );
+      })();
     </script>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="Giovanni Vicentin" />
+    <meta name="creator" content="Giovanni Vicentin" />
+    <meta name="publisher" content="Giovanni Vicentin" />
     <meta
       name="description"
-      content="Converta PDF ou EPUB em áudio no navegador, com privacidade e vozes do sistema."
+      content="Transforme PDF e EPUB em áudio no navegador e escute seus ebooks como audiolivros, com praticidade, privacidade e vozes do próprio dispositivo."
     />
+    <meta
+      name="keywords"
+      content="ebook em áudio, audiolivro, pdf para áudio, epub para áudio, pdf para audiolivro, epub para audiolivro, text to speech, web speech api"
+    />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ebook em Áudio | Transforme PDF e EPUB em audiolivro" />
+    <meta
+      property="og:description"
+      content="Converta ebooks, PDFs e EPUBs em áudio direto no navegador e ouça seu conteúdo como audiolivro, sem conta, sem upload para servidor e com uma experiência simples."
+    />
+    <meta property="og:site_name" content="Ebook em Áudio" />
+    <meta property="og:url" content="https://giovannivicentin.com" />
+    <meta property="og:image" content="https://giovannivicentin.com/preview.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:alt" content="Prévia do site Ebook em Áudio para transformar PDF e EPUB em audiolivro" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Ebook em Áudio | Transforme PDF e EPUB em audiolivro" />
+    <meta
+      name="twitter:description"
+      content="Leve seus ebooks para o áudio em segundos: envie um PDF ou EPUB e escute como audiolivro, direto no navegador."
+    />
+    <meta name="twitter:image" content="https://giovannivicentin.com/preview.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&display=swap"
       rel="stylesheet"
     />
-    <title>Ebook em áudio</title>
+    <title>Ebook em Áudio | Transforme PDF e EPUB em audiolivro</title>
   </head>
   <body>
     <div id="root"></div>
