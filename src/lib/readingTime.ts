@@ -1,5 +1,5 @@
-/** Rough duration at rate 1.0; scales inversely with speech `rate`. */
-const CHARS_PER_SEC_BASE = 13.5
+/** Estimativa para o total (~); o decorrido em reprodução usa relógio + `onstart`. */
+const CHARS_PER_SEC_BASE = 12.5
 
 export function estimateChunkDurationSec(chunk: string, rate: number): number {
   const r = Math.max(0.5, rate)
