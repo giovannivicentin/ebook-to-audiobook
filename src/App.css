@@ -19,8 +19,11 @@
 }
 
 .app {
+  display: flex;
+  flex-direction: column;
   max-width: 48rem;
   margin: 0 auto;
+  min-height: 100svh;
   padding: 2.25rem 1.25rem 4rem;
   text-align: left;
 }
@@ -819,8 +822,20 @@
   color: var(--accent-hover);
 }
 
+.footer-block {
+  margin-top: auto;
+}
+
+.footer-hint {
+  margin: 2.75rem 0 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--text-subtle);
+  max-width: 42rem;
+}
+
 .footer {
-  margin-top: 2.75rem;
+  margin-top: 0;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }
@@ -830,5 +845,20 @@
   font-size: 0.875rem;
   line-height: 1.55;
   color: var(--text-subtle);
-  max-width: 42rem;
+  max-width: none;
+}
+
+.footer-credit {
+  text-align: center;
+}
+
+.footer a {
+  color: var(--accent-muted);
+  font-weight: 600;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: 2px;
+}
+
+.footer a:hover {
+  color: var(--accent);
 }
