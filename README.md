@@ -21,6 +21,8 @@ Abra o endereço que o Vite mostrar (em geral `http://localhost:5173`), escolha 
 
 - **PDF escaneado** (só imagem, sem camada de texto) não gera leitura útil; seria preciso OCR (não incluído).
 - Qualidade e vozes disponíveis dependem do **navegador e do SO** (no macOS, costuma ajudar instalar vozes em Ajustes → Acessibilidade → Conteúdo falado).
+- Se o Windows expuser vozes como **Microsoft Francisca** ou **Microsoft Antonio** para a Web Speech API, o app agora as prioriza no topo da lista automaticamente.
+- O app continua **sem backend e sem API da Microsoft**: ele não baixa essas vozes sozinho; elas precisam estar instaladas e visíveis no navegador.
 
 ## Build para hospedar de graça
 
