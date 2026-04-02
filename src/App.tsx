@@ -703,9 +703,22 @@ export default function App() {
         </details>
       </section>
 
-      <footer className="footer">
-        <p>{footerHint}</p>
-      </footer>
+      <div className="footer-block">
+        <p className="footer-hint">{footerHint}</p>
+        <footer className="footer">
+          <p className="footer-credit">
+            Feito por{" "}
+            <a
+              href="https://giovannivicentin.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Giovanni Vicentin
+            </a>{" "}
+            • © 2026 Todos os direitos reservados.
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
