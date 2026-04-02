@@ -38,6 +38,14 @@ export default function App() {
 
   const voices = useVoices(lang)
   const selectedVoice = voices[voiceIndex] ?? null
+  const hasMicrosoftFranciscaOrAntonio = useMemo(
+    () =>
+      voices.some((v) => {
+        const name = v.name.toLowerCase()
+        return name.includes('francisca') || name.includes('antonio')
+      }),
+    [voices],
+  )
 
   useEffect(() => {
     setVoiceIndex(0)
@@ -247,6 +255,13 @@ export default function App() {
                   ))
                 )}
               </select>
+              {lang === 'pt-BR' && (
+                <p className="hint">
+                  {hasMicrosoftFranciscaOrAntonio
+                    ? 'Microsoft Francisca/Antonio detectada: estas vozes ficam priorizadas no topo.'
+                    : 'Se você instalar Microsoft Francisca ou Antonio no sistema, elas aparecerão aqui e ficarão no topo automaticamente.'}
+                </p>
+              )}
             </div>
 
             <div className="row">
@@ -421,7 +436,15 @@ export default function App() {
               <a href="https://support.microsoft.com/pt-br/topic/baixar-idiomas-e-vozes-para-leitura-avan%25C3%25A7ada-modo-de-leitura-e-leitura-em-voz-alta-4c83a8d8-7486-42f7-8e46-2b0fdf753130" target="_blank" rel="noreferrer">
                 Settings → Language & region → Add a language
               </a>
-              . Em geral, o pacote com ícone de “Text-to-speech” libera novas vozes.
+              . Em geral, o pacote com ícone de “Text-to-speech” libera novas vozes. Quando o
+              Windows/navegador expõe <strong>Microsoft Francisca</strong> ou{' '}
+              <strong>Microsoft Antonio</strong>, este app passa a colocá-las no topo da lista.
+            </p>
+
+            <p>
+              Importante: este projeto <strong>não consegue instalar nem baixar</strong> vozes da
+              Microsoft por conta própria, porque roda 100% no navegador e só enxerga as vozes que
+              o sistema operacional já disponibiliza para a Web Speech API.
             </p>
           </div>
         </details>
