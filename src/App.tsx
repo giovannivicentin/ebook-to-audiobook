@@ -2,11 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { extractTextFromPdf } from "./lib/extractPdf";
 import { extractTextFromEpub } from "./lib/extractEpub";
 import { chunkForSpeech } from "./lib/chunkText";
-import {
-  cumulativeDurationSec,
-  formatTimeMmSs,
-  totalDurationSec,
-} from "./lib/readingTime";
+import { formatTimeMmSs, totalDurationSec } from "./lib/readingTime";
+import { usePlaybackElapsed } from "./lib/usePlaybackElapsed";
 import { HelpBody, HelpSummaryLabel } from "./HelpContent";
 import {
   detectClientPlatform,
@@ -16,6 +13,10 @@ import { type LangMode, useSpeechQueue, useVoices } from "./lib/useSpeech";
 import "./App.css";
 
 type LoadState = "idle" | "loading" | "ready" | "error";
+
+type ThemeChoice = "light" | "dark";
+
+const THEME_STORAGE = "ebook-audio-theme";
 
 const LANG_OPTIONS: { value: LangMode; label: string }[] = [
   { value: "pt-BR", label: "Português (Brasil)" },
@@ -41,6 +42,20 @@ export default function App() {
   );
   const [isDraggingFile, setIsDraggingFile] = useState(false);
   const dragDepthRef = useRef(0);
+  const [theme, setTheme] = useState<ThemeChoice>(() =>
+    document.documentElement.getAttribute("data-theme") === "dark"
+      ? "dark"
+      : "light",
+  );
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem(THEME_STORAGE, theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
 
   const chunks = useMemo(() => chunkForSpeech(text), [text]);
   const totalChunks = chunks.length;
@@ -74,18 +89,30 @@ export default function App() {
     setChunkIndex(0);
   }, []);
 
+  const {
+    elapsedSec,
+    onUtteranceStart,
+    snapshotForPause,
+    prepareResume,
+    resetClock,
+    clearPauseAnchor,
+  } = usePlaybackElapsed(chunks, chunkIndex, rate, playback);
+
   const { speak, pause, resume, stop, seekToChunk, skipChunks } =
-    useSpeechQueue(lang, selectedVoice, rate, pitch, onChunkIndex, onDone);
+    useSpeechQueue(
+      lang,
+      selectedVoice,
+      rate,
+      pitch,
+      onChunkIndex,
+      onUtteranceStart,
+      onDone,
+    );
 
   const preview = useMemo(() => {
     if (text.length <= 4000) return text;
     return `${text.slice(0, 4000)}…`;
   }, [text]);
-
-  const elapsedApprox = useMemo(
-    () => cumulativeDurationSec(chunks, chunkIndex, rate),
-    [chunks, chunkIndex, rate],
-  );
 
   const totalApprox = useMemo(
     () => totalDurationSec(chunks, rate),
@@ -98,6 +125,7 @@ export default function App() {
     setFileName(file.name);
     setLoadState("loading");
     setText("");
+    resetClock();
     stop();
     setPlayback("idle");
     setChunkIndex(0);
@@ -157,6 +185,7 @@ export default function App() {
   const resumePlayback = playback === "playing" || playback === "paused";
 
   const handleSeekSlider = (next: number) => {
+    if (playback === "paused") clearPauseAnchor();
     const i = clamp(Math.round(next), 0, Math.max(0, totalChunks - 1));
     if (resumePlayback) {
       seekToChunk(i, true);
@@ -167,6 +196,7 @@ export default function App() {
 
   const handleSkip = (delta: number) => {
     if (totalChunks === 0) return;
+    if (playback === "paused") clearPauseAnchor();
     const next = clamp(chunkIndex + delta, 0, totalChunks - 1);
     if (resumePlayback) {
       skipChunks(delta, true);
@@ -182,23 +212,30 @@ export default function App() {
   };
 
   const handlePause = () => {
+    snapshotForPause();
     pause();
     setPlayback("paused");
   };
 
   const handleResume = () => {
+    prepareResume();
     resume();
     setPlayback("playing");
   };
 
   const handleStop = () => {
+    resetClock();
     stop();
     setPlayback("idle");
     setChunkIndex(0);
   };
 
   const progressPct =
-    totalChunks > 0 ? Math.round(((chunkIndex + 1) / totalChunks) * 100) : 0;
+    totalApprox > 0
+      ? Math.min(100, Math.round((elapsedSec / totalApprox) * 100))
+      : totalChunks > 0
+        ? Math.round(((chunkIndex + 1) / totalChunks) * 100)
+        : 0;
 
   const showTransport = totalChunks > 0;
   const textTruncated = text.length > 4000;
@@ -216,16 +253,52 @@ export default function App() {
         Ir para o conteúdo principal
       </a>
       <header className="header">
-        <div className="title-block">
-          <h1 className="title-hero">Ebook em áudio</h1>
-          <p
-            className="title-formats"
-            aria-label="Formatos suportados: PDF e EPUB"
+        <div className="header-top">
+          <div className="title-block">
+            <h1 className="title-hero">Ebook em áudio</h1>
+            <p
+              className="title-formats"
+              aria-label="Formatos suportados: PDF e EPUB"
+            >
+              <span className="title-formats__item">PDF</span>
+              <span className="title-formats__sep" aria-hidden="true" />
+              <span className="title-formats__item">EPUB</span>
+            </p>
+          </div>
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
+            aria-pressed={theme === "dark"}
+            aria-label={
+              theme === "dark"
+                ? "Ativar tema claro"
+                : "Ativar tema escuro"
+            }
           >
-            <span className="title-formats__item">PDF</span>
-            <span className="title-formats__sep" aria-hidden="true" />
-            <span className="title-formats__item">EPUB</span>
-          </p>
+            {theme === "dark" ? (
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" />
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"
+                />
+              </svg>
+            )}
+          </button>
         </div>
         <p className="lede">
           Envie um PDF ou EPUB e ouça com a voz do seu navegador — gratuito, sem
@@ -275,7 +348,12 @@ export default function App() {
       </section>
 
       {fileName && (
-        <p className="file-meta">
+        <p
+          className="file-meta"
+          {...(loadState === "loading"
+            ? { "aria-live": "polite" as const }
+            : {})}
+        >
           <span>
             Arquivo: <strong>{fileName}</strong>
           </span>
@@ -397,59 +475,86 @@ export default function App() {
               >
                 Reprodução
               </p>
-              <div className="buttons" aria-labelledby="reproducao">
-                {playback === "idle" && (
-                  <button
-                    type="button"
-                    className="primary"
-                    onClick={handlePlay}
-                  >
-                    Ouvir
-                  </button>
-                )}
-                {playback === "playing" && (
-                  <button type="button" onClick={handlePause}>
-                    Pausar
-                  </button>
-                )}
-                {playback === "paused" && (
-                  <>
-                    <button
-                      type="button"
-                      className="primary"
-                      onClick={handleResume}
-                    >
-                      Continuar
-                    </button>
-                    <button type="button" onClick={handleStop}>
-                      Parar
-                    </button>
-                  </>
-                )}
-                {playback === "playing" && (
-                  <button type="button" onClick={handleStop}>
-                    Parar
-                  </button>
-                )}
-              </div>
 
               {showTransport && (
-                <div className="transport">
-                  <p className="time-row">
-                    <span className="time-label">Tempo aproximado</span>
-                    <span className="time-values">
-                      {formatTimeMmSs(elapsedApprox)} /{" "}
-                      {formatTimeMmSs(totalApprox)}
+                <div className="player-shell" aria-labelledby="reproducao">
+                  <div className="player-time">
+                    <span className="player-time__live" aria-live="polite">
+                      {formatTimeMmSs(elapsedSec)}
                     </span>
-                  </p>
-                  <p className="chunk-label">
-                    Trecho {totalChunks ? chunkIndex + 1 : 0} de {totalChunks}
+                    <span className="player-time__sep" aria-hidden="true">
+                      /
+                    </span>
+                    <span className="player-time__total" title="Duração estimada">
+                      ~{formatTimeMmSs(totalApprox)}
+                    </span>
+                  </div>
+                  <p className="player-chunk">
+                    Trecho{" "}
+                    <strong>
+                      {totalChunks ? chunkIndex + 1 : 0} / {totalChunks}
+                    </strong>
                   </p>
 
-                  <div className="seek-row">
+                  <div className="player-controls">
+                    {playback === "idle" && (
+                      <button
+                        type="button"
+                        className="player-btn player-btn--play"
+                        onClick={handlePlay}
+                        aria-label="Ouvir"
+                        title="Ouvir"
+                      >
+                        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="currentColor" d="M8 5v14l11-7L8 5z" />
+                        </svg>
+                      </button>
+                    )}
+                    {playback === "playing" && (
+                      <button
+                        type="button"
+                        className="player-btn player-btn--primary"
+                        onClick={handlePause}
+                        aria-label="Pausar"
+                        title="Pausar"
+                      >
+                        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="currentColor" d="M6 5h4v14H6V5zm8 0h4v14h-4V5z" />
+                        </svg>
+                      </button>
+                    )}
+                    {playback === "paused" && (
+                      <button
+                        type="button"
+                        className="player-btn player-btn--play"
+                        onClick={handleResume}
+                        aria-label="Continuar"
+                        title="Continuar"
+                      >
+                        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="currentColor" d="M8 5v14l11-7L8 5z" />
+                        </svg>
+                      </button>
+                    )}
+                    {playback !== "idle" && (
+                      <button
+                        type="button"
+                        className="player-btn player-btn--ghost"
+                        onClick={handleStop}
+                        aria-label="Parar e voltar ao início"
+                        title="Parar"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+                          <path fill="currentColor" d="M6 6h12v12H6V6z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="player-seek">
                     <button
                       type="button"
-                      className="icon-btn"
+                      className="player-skip"
                       title="Voltar 5 trechos"
                       aria-label="Voltar 5 trechos"
                       onClick={() => handleSkip(-5)}
@@ -459,13 +564,15 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      className="icon-btn"
+                      className="player-skip"
                       title="Trecho anterior"
                       aria-label="Trecho anterior"
                       onClick={() => handleSkip(-1)}
                       disabled={totalChunks <= 1}
                     >
-                      ◀
+                      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M6 6h2v12H6V6zm3.5 6l9 6V6l-9 6z" />
+                      </svg>
                     </button>
                     <div className="seek-slider-wrap">
                       <input
@@ -495,17 +602,19 @@ export default function App() {
                     </div>
                     <button
                       type="button"
-                      className="icon-btn"
+                      className="player-skip"
                       title="Próximo trecho"
                       aria-label="Próximo trecho"
                       onClick={() => handleSkip(1)}
                       disabled={totalChunks <= 1}
                     >
-                      ▶
+                      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill="currentColor" d="M16 18h2V6h-2v12zM6 6v12l9-6-9-6z" />
+                      </svg>
                     </button>
                     <button
                       type="button"
-                      className="icon-btn"
+                      className="player-skip"
                       title="Avançar 5 trechos"
                       aria-label="Avançar 5 trechos"
                       onClick={() => handleSkip(5)}
@@ -514,28 +623,35 @@ export default function App() {
                       +5
                     </button>
                   </div>
-                  <p className="transport-note">
-                    A posição é por <strong>trechos de texto</strong> (não
-                    segundos exatos): o navegador não expõe tempo como um player
-                    de MP3.
-                  </p>
-                </div>
-              )}
 
-              {totalChunks > 0 && playback !== "idle" && (
-                <div className="progress-wrap" aria-live="polite">
-                  <div
-                    className="progress-bar"
-                    role="progressbar"
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-valuenow={progressPct}
-                    aria-valuetext={`${progressPct}% do texto lido`}
-                    style={{ width: `${progressPct}%` }}
-                  />
-                  <span className="progress-label">
-                    {progressPct}% do texto
-                  </span>
+                  <p className="transport-note">
+                    O tempo à <strong>esquerda</strong> acompanha a leitura em tempo real (cada
+                    trecho começa a contar quando a fala começa). O valor com <strong>~</strong> é
+                    duração <strong>estimada</strong> do texto todo — a Web Speech API não expõe
+                    tempo exato como um MP3.
+                  </p>
+
+                  {playback !== "idle" && (
+                    <div className="progress-stack" aria-live="polite">
+                      <div
+                        className="progress-wrap"
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={progressPct}
+                        aria-valuetext={`${progressPct} por cento do texto lido (estimativa)`}
+                        aria-labelledby="progress-percent-label"
+                      >
+                        <div
+                          className="progress-bar"
+                          style={{ width: `${progressPct}%` }}
+                        />
+                      </div>
+                      <span className="progress-label" id="progress-percent-label">
+                        {progressPct}% do texto (estimativa)
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -554,8 +670,8 @@ export default function App() {
       )}
 
       <section className="help" aria-label="Ajuda sobre voz e acessibilidade">
-        <details className="help-details">
-          <summary className="help-summary">
+        <details className="help-details" id="painel-ajuda">
+          <summary className="help-summary" id="titulo-ajuda">
             <span className="help-summary__text">
               <HelpSummaryLabel platform={platform} />
             </span>
@@ -587,9 +703,22 @@ export default function App() {
         </details>
       </section>
 
-      <footer className="footer">
-        <p>{footerHint}</p>
-      </footer>
+      <div className="footer-block">
+        <p className="footer-hint">{footerHint}</p>
+        <footer className="footer">
+          <p className="footer-credit">
+            Feito por{" "}
+            <a
+              href="https://giovannivicentin.com"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Giovanni Vicentin
+            </a>{" "}
+            • © 2026 Todos os direitos reservados.
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }

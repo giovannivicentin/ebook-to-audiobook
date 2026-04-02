@@ -94,15 +94,18 @@ export function useSpeechQueue(
   rate: number,
   pitch: number,
   onChunkIndex: (zeroBasedIndex: number, total: number) => void,
+  onUtteranceStart: ((chunkIndex: number) => void) | undefined,
   onDone: () => void,
 ): SpeechControls {
   const onChunkIndexRef = useRef(onChunkIndex)
+  const onUtteranceStartRef = useRef(onUtteranceStart)
   const onDoneRef = useRef(onDone)
 
   useEffect(() => {
     onChunkIndexRef.current = onChunkIndex
+    onUtteranceStartRef.current = onUtteranceStart
     onDoneRef.current = onDone
-  }, [onChunkIndex, onDone])
+  }, [onChunkIndex, onUtteranceStart, onDone])
 
   const stateRef = useRef({ chunks: [] as string[], index: 0 })
   const speakNextRef = useRef<() => void>(() => {})
@@ -131,6 +134,9 @@ export function useSpeechQueue(
       const resolved = resolveVoiceForUtterance(sessionVoiceRef.current, lang)
       if (resolved) u.voice = resolved
 
+      u.onstart = () => {
+        onUtteranceStartRef.current?.(index)
+      }
       u.onend = () => {
         stateRef.current.index += 1
         speakNextRef.current()
