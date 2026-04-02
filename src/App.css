@@ -41,7 +41,7 @@
 
 .header-top {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem 1rem;
@@ -78,6 +78,8 @@
 }
 
 .title-block {
+  min-width: 0;
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
