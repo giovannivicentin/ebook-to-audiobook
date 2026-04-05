@@ -1,4 +1,5 @@
 import JSZip from 'jszip'
+import { readFileAsArrayBuffer } from './readFileAsArrayBuffer'
 
 function normalizeText(s: string): string {
   return s.replace(/\s+/g, ' ').trim()
@@ -46,7 +47,7 @@ async function readZipText(zip: JSZip, path: string): Promise<string | null> {
 }
 
 export async function extractTextFromEpub(file: File): Promise<string> {
-  const buf = await file.arrayBuffer()
+  const buf = await readFileAsArrayBuffer(file)
   const zip = await JSZip.loadAsync(buf)
 
   const containerStr = await readZipText(zip, 'META-INF/container.xml')
