@@ -1,10 +1,11 @@
-import * as pdfjsLib from 'pdfjs-dist'
-import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
+import pdfWorker from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'
+import { readFileAsArrayBuffer } from './readFileAsArrayBuffer'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
 
 export async function extractTextFromPdf(file: File): Promise<string> {
-  const data = new Uint8Array(await file.arrayBuffer())
+  const data = new Uint8Array(await readFileAsArrayBuffer(file))
   const loadingTask = pdfjsLib.getDocument({ data })
   const pdf = await loadingTask.promise
   const parts: string[] = []
