@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { extractTextFromPdf } from "./lib/extractPdf";
-import { extractTextFromEpub } from "./lib/extractEpub";
 import { chunkForSpeech } from "./lib/chunkText";
 import { formatTimeMmSs, totalDurationSec } from "./lib/readingTime";
 import { usePlaybackElapsed } from "./lib/usePlaybackElapsed";
@@ -133,8 +131,10 @@ export default function App() {
     try {
       let extracted = "";
       if (lower.endsWith(".pdf")) {
+        const { extractTextFromPdf } = await import("./lib/extractPdf");
         extracted = await extractTextFromPdf(file);
       } else if (lower.endsWith(".epub")) {
+        const { extractTextFromEpub } = await import("./lib/extractEpub");
         extracted = await extractTextFromEpub(file);
       } else {
         throw new Error("Use um arquivo .pdf ou .epub.");
