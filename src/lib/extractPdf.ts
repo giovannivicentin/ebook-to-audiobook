@@ -1,5 +1,5 @@
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import pdfWorker from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
+import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+import pdfWorker from "pdfjs-dist/legacy/build/pdf.worker.min.js?url";
 import { readFileAsArrayBuffer } from "./readFileAsArrayBuffer";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
@@ -18,17 +18,27 @@ function isLikelyIosWebKit(): boolean {
 async function ensurePdfJsFakeWorkerOnIos(): Promise<void> {
   if (!isLikelyIosWebKit()) return;
 
+  const pdfWorkerUtil = (
+    pdfjsLib as typeof pdfjsLib & {
+      PDFWorkerUtil?: { isWorkerDisabled?: boolean };
+    }
+  ).PDFWorkerUtil;
+
+  if (pdfWorkerUtil) {
+    pdfWorkerUtil.isWorkerDisabled = true;
+  }
+
   const globalScope = globalThis as typeof globalThis & {
     pdfjsWorker?: { WorkerMessageHandler?: unknown };
   };
 
   if (globalScope.pdfjsWorker?.WorkerMessageHandler) return;
 
-  const workerModule =
-    await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs");
-  globalScope.pdfjsWorker = {
-    WorkerMessageHandler: workerModule.WorkerMessageHandler,
-  };
+  await import("pdfjs-dist/legacy/build/pdf.worker.min.js");
+
+  if (!globalScope.pdfjsWorker?.WorkerMessageHandler) {
+    throw new Error("Não foi possível carregar o leitor de PDF neste iOS.");
+  }
 }
 
 export async function extractTextFromPdf(file: File): Promise<string> {
