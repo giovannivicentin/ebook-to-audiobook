@@ -10,6 +10,10 @@ const PromiseCompat = Promise as PromiseConstructor & {
     resolve: (value: T | PromiseLike<T>) => void
     reject: (reason?: unknown) => void
   }
+  try?: <T>(
+    callback: (...args: unknown[]) => T | PromiseLike<T>,
+    ...args: unknown[]
+  ) => Promise<T>
 }
 
 if (typeof PromiseCompat.withResolvers !== 'function') {
@@ -21,6 +25,17 @@ if (typeof PromiseCompat.withResolvers !== 'function') {
       reject = rej
     })
     return { promise, resolve, reject }
+  }
+}
+
+if (typeof PromiseCompat.try !== 'function') {
+  PromiseCompat.try = function promiseTry<T>(
+    callback: (...args: unknown[]) => T | PromiseLike<T>,
+    ...args: unknown[]
+  ) {
+    return new Promise<T>((resolve) => {
+      resolve(callback(...args))
+    })
   }
 }
 
@@ -47,6 +62,45 @@ if (typeof String.prototype.at !== 'function') {
     writable: true,
     configurable: true,
   })
+}
+
+type TypedArrayWithAt = {
+  readonly length: number
+  [index: number]: unknown
+}
+
+type TypedArrayConstructorWithAt = {
+  prototype: {
+    at?: (index: number) => unknown
+  }
+}
+
+const typedArrayConstructors = [
+  Int8Array,
+  Uint8Array,
+  Uint8ClampedArray,
+  Int16Array,
+  Uint16Array,
+  Int32Array,
+  Uint32Array,
+  Float32Array,
+  Float64Array,
+  typeof BigInt64Array === 'function' ? BigInt64Array : undefined,
+  typeof BigUint64Array === 'function' ? BigUint64Array : undefined,
+].filter(Boolean) as TypedArrayConstructorWithAt[]
+
+for (const ctor of typedArrayConstructors) {
+  if (typeof ctor.prototype.at !== 'function') {
+    Object.defineProperty(ctor.prototype, 'at', {
+      value: function at(this: TypedArrayWithAt, index: number) {
+        const len = this.length >>> 0
+        const normalized = index >= 0 ? index : len + index
+        return normalized < 0 || normalized >= len ? undefined : this[normalized]
+      },
+      writable: true,
+      configurable: true,
+    })
+  }
 }
 
 if (typeof String.prototype.replaceAll !== 'function') {
